@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-import MFIS_Classes as mfc
-import MFIS_Read_Functions as mfr
+import MFIS_Classes as classes
+import MFIS_Read_Functions as loader
 
 # Configuration of what to print/show
 config = {
@@ -10,8 +10,8 @@ config = {
     'plot': True
 }
 
-class FuzzyPlot:
-    def __init__(self, fuzzySetsDict: mfc.FuzzySetsDict):
+class FuzzySetPlot:
+    def __init__(self, fuzzySetsDict: classes.FuzzySetsDict):
         self.fuzzySetsDict = fuzzySetsDict
         
         self.fig, self.ax = plt.subplots()
@@ -45,29 +45,31 @@ class FuzzyPlot:
 
 if __name__ == '__main__':
     # Read fuzzy sets file
-    fuzzySetsDict = mfr.readFuzzySetsFile('Risks.txt')
+    fuzzySetsDict = loader.readFuzzySetsFile('Risks.txt')
 
     # Read rules file
-    rules = mfr.readRulesFile()
+    rules = loader.readRulesFile()
 
-    # Print fuzzy sets and rules
+    # Print fuzzy sets
     if config["fuzzySets"]:
         print("_____________ Fuzzy Sets ______________\n")
         fuzzySetsDict.printFuzzySetsDict()
         
+    # Print rules
     if config["rules"]:
         print("_____________ Rules ______________\n")
         rules.printRuleList()
 
     # Read applications file
     if config["applications"]:
-        applications: list = mfr.readApplicationsFile()
+        print("_____________ Applications ______________\n")
+        applications: list = loader.readApplicationsFile()
         for app in applications:
             app.printApplication()
 
     # Plot fuzzy sets
     if config["plot"]:
-        fuzzyPlot = FuzzyPlot(fuzzySetsDict)
+        fuzzyPlot = FuzzySetPlot(fuzzySetsDict)
         fuzzyPlot.plot()
         fuzzyPlot.render()  
     
