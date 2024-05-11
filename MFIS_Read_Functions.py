@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import numpy as np
 import skfuzzy as skf
 import matplotlib.pyplot as plt
@@ -37,7 +36,7 @@ def readFuzzySetsFile(fleName):
     return fuzzySetsDict
 
 def readRulesFile():
-    inputFile = open('Files/Rules.txt', 'r')
+    inputFile = open('Rules.txt', 'r')
     rules = RuleList()
     line = inputFile.readline()
     while line != '':
