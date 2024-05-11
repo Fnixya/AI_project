@@ -55,7 +55,7 @@ def readRulesFile():
     return rules
 
 def readApplicationsFile():
-    inputFile = open('Files/Applications.txt', 'r')
+    inputFile = open('Applications.txt', 'r')
     applicationList = []
     line = inputFile.readline()
     while line != '':
