@@ -1,2 +1,1 @@
-Rules ______________\n")
-        # rules.printRuleList()
+rule.strength
