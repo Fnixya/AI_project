@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import skfuzzy as skf
 import MFIS_Classes as classes
 import MFIS_Read_Functions as loader
 
@@ -81,21 +82,29 @@ class FuzzySystem:
             pass
     
     def _aggregation(self):
+        # https://pythonhosted.org/scikit-fuzzy/api/skfuzzy.html#skfuzzy.fuzzy_min
+        # skf.fuzzy_or(x1, y1, x2, y2)
         pass
 
-    def _defuzzification(self, fuzzyValues: dict, method: str = 'COA') -> float:
-        if method == 'COA' or method.lower() == 'centroid of area':
-            pass
-        elif method == 'BOA' or method.lower() == 'bisector of area':
-            pass
-        elif method == 'MOM' or method.lower() == 'mean of maximum':
-            pass
-        elif method == 'SOM' or method.lower() == 'smallest of maximum':
-            pass
-        elif method == 'LOM' or method.lower() == 'largest of maximum':
-            pass
-        else:
-            return -1
+    # https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_defuzzify.html
+    def _defuzzification(self, fuzzyValues: dict, method: str = 'centroid') -> float:
+        x = None
+        y = None
+
+        if method.lower() == 'coa' or method.lower() == 'centroid of area':
+            method = 'centroid'
+        elif method.lower() == 'boa' or method.lower() == 'bisector of area':
+            method = 'bisector'
+        elif method.lower() == 'mean of maximum':
+            method = 'mom'
+        elif method.lower() == 'smallest of maximum':
+            method = 'som'
+        elif method.lower() == 'largest of maximum':
+            method = 'lom'
+        
+        defuzz = skf.defuzz(x, y, method)
+        return defuzz
+        
 
 
 
