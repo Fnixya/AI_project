@@ -4,26 +4,19 @@ import MFIS_Classes as classes
 import MFIS_Read_Functions as loader
 import copy as cp
 
-# Configuration of what to print/show
-config = {
-    'fuzzySets': False,
-    'rules': False,
-    'applications': False,
-    'plot': False
-}
-
 class FuzzySystem:
-    def __init__(self, fuzzyRisks: classes.FuzzySetsDict, fuzzyVars: classes.FuzzySetsDict, rules: classes.RuleList):
+    def __init__(self, fuzzyRisks: classes.FuzzySetsDict, fuzzyVars: classes.FuzzySetsDict, rules: classes.RuleList, options):
         self.fuzzyRisks = fuzzyRisks
         self.fuzzyVars = fuzzyVars
         self.fuzzySets: dict = self.fuzzyRisks.copy()
         self.fuzzySets.update(fuzzyVars)
 
         self.rules = rules
+        self.options = options
 
 # Fuzzy methods ______________________________________________
 
-    def inference(self, application: classes.Application, method: str = None) -> float:
+    def inference(self, application: classes.Application) -> float:
         # No se que hacer aqui la verdad
         # computation of antecedent: max of min
         # computation of consequent: clip or scale
@@ -41,7 +34,7 @@ class FuzzySystem:
 
         # self.plot_aggregation(risks, aggregation)
 
-        defuzz = self._defuzzification(aggregation, method if method else 'centroid')       
+        defuzz = self._defuzzification(aggregation)       
         return defuzz
     
 
@@ -80,9 +73,9 @@ class FuzzySystem:
         return similarity
 
 
-    def _compute_consequents(self, similarities: dict, method: str = 'S') -> dict:
+    def _compute_consequents(self, similarities: dict) -> dict:
         risks = cp.deepcopy(self.fuzzyRisks)
-
+        method = self.options["consequents_mode"] if self.options["consequents_mode"] else 'C'
 
        
         if method == 'C' or method.lower() == 'clip':
@@ -110,10 +103,11 @@ class FuzzySystem:
         return output
 
     # https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_defuzzify.html
-    def _defuzzification(self, aggregation, method: str = 'centroid') -> float:
+    def _defuzzification(self, aggregation) -> float:
         x = aggregation[0]
         y = aggregation[1]
 
+        method = self.options["defuzz_mode"] if self.options["defuzz_mode"] else 'centroid'
         if method.lower() == 'coa' or method.lower() == 'centroid of area':
             method = 'centroid'
         elif method.lower() == 'boa' or method.lower() == 'bisector of area':
@@ -209,6 +203,32 @@ class FuzzySystem:
         # self.graph[i].set_ydata(...)
         plt.draw()
 
+
+# Debugging ______________________________________________
+    def debug(self):
+        # Print fuzzy sets
+        if self.options["debug"]["fuzzySets"]:
+            print("_____________ Fuzzy Sets ______________\n")
+            fuzzyRisks.printFuzzySetsDict()
+            fuzzyVars.printFuzzySetsDict()
+            
+        # Print rules
+        if self.options["debug"]["rules"]:
+            print("_____________ Rules ______________\n")
+            rules.printRuleList()
+
+        # Read applications file
+        # if self.options["debug"]["applications"]:
+        #     print("_____________ Applications ______________\n")
+        #     for app in applications:
+        #         app.printApplication()
+
+        # Plot fuzzy sets
+        if self.options["debug"]["plot"]:
+            self.plot()
+            self.render()  
+
+
                   
 
 if __name__ == '__main__':
@@ -218,32 +238,19 @@ if __name__ == '__main__':
     rules = loader.readRulesFile()
     applications: list = loader.readApplicationsFile()
     
-    fuzzySystem = FuzzySystem(fuzzyRisks, fuzzyVars, rules)
-
-
-    # Print fuzzy sets
-    if config["fuzzySets"]:
-        print("_____________ Fuzzy Sets ______________\n")
-        fuzzyRisks.printFuzzySetsDict()
-        fuzzyVars.printFuzzySetsDict()
-        
-    # Print rules
-    if config["rules"]:
-        print("_____________ Rules ______________\n")
-        rules.printRuleList()
-
-    # Read applications file
-    if config["applications"]:
-        print("_____________ Applications ______________\n")
-        for app in applications:
-            app.printApplication()
-
-    # Plot fuzzy sets
-    if config["plot"]:
-        fuzzySystem.plot()
-        fuzzySystem.render()  
+    fuzzySystem = FuzzySystem(fuzzyRisks, fuzzyVars, rules, options={
+        "consequents_mode": "S",
+        "defuzz_mode": "mom",
+        "debug" : {
+            'fuzzySets': False,
+            'rules': False,
+            'applications': False,
+            'plot': False
+        }
+    })
+    fuzzySystem.debug()
 
     # test
     for application in applications:
         risk = fuzzySystem.inference(application)
-        print(f"Risk value of {application.appId}: {risk}")
+        print(f"Risk value of applicant {application.appId} = {risk}")
