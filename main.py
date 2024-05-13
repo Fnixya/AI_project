@@ -40,9 +40,9 @@ class FuzzySetPlot:
     def render(self) -> None:
         plt.show()
 
+   
         
                   
-
 if __name__ == '__main__':
     # Read fuzzy sets file
     fuzzySetsDict = loader.readFuzzySetsFile('Risks.txt')
