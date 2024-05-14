@@ -17,14 +17,16 @@ class FuzzySystem:
         self.LINE_COLORS = ['g', 'y', 'r', 'k']
 
     def process(self, applications: list[classes.Application], plot: list[str] = []) -> None:
+        file = open("Results.txt", "w")
         for application in applications:
             plot_application = False
             if application.appId in plot:
                 plot_application = True
 
             risk, rules_applied = fuzzySystem.inference(application, plot_application)
-            print(f"Risk value of applicant {application.appId} = {risk}. Rules applied {rules_applied}")
-
+            #print(f"Risk value of applicant {application.appId} = {risk}. Rules applied {rules_applied}")
+            file.write(f"Risk value of applicant {application.appId} = {risk}. Rules applied {rules_applied}\n")
+        file.close()
 
         self.render()
 
@@ -138,8 +140,6 @@ class FuzzySystem:
         defuzz = skf.defuzz(x, y, method)
         return defuzz
         
-
-
 
 # Plot methods ______________________________________________
 
@@ -256,8 +256,10 @@ class FuzzySystem:
             self.plot_fuzzysets()
             self.render()  
 
-
-                  
+def write_output(filename):
+    
+    
+    pass                 
 
 if __name__ == '__main__':
     fuzzyRisks = loader.readFuzzySetsFile('Risks.txt')
