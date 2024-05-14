@@ -18,7 +18,7 @@ class FuzzySystem:
 
     def process(self, applications: list[classes.Application], plot: list[str] = [], filename: str = None) -> None:
         file = open(filename, "w")
-        self.rules_applied = [False] * len(self.rules)
+        self.rules_applied = [0] * len(self.rules)
         for application in applications:
             plot_application = False
             if application.appId in plot:
@@ -28,7 +28,10 @@ class FuzzySystem:
             file.write(f"{application.appId}, Risk {risk}\n")
         
         if self.options["debug"]["rules_applied"]:
-            print("Results applied", self.rules_applied.count(True))
+            K = 4
+            print("Rules applied", len(self.rules_applied) - self.rules_applied.count(0))
+            print(f"Rules used more than {K}:", len([i for i in self.rules_applied if i > K]))
+
         file.close()
         self.render()
 
@@ -79,7 +82,7 @@ class FuzzySystem:
             rule.strength = min(strengths)
             if rule.strength:
                 label = rule.consequent
-                self.rules_applied[i] = True
+                self.rules_applied[i] += 1
                 similarity[label].append(rule.strength)
 
         # Obtain the maximum strength/similarity for each consequent
@@ -276,13 +279,14 @@ if __name__ == '__main__':
             'rules': False,
             'applications': False,
             'plot': False,
-            'rules_applied': False
+            'rules_applied': True
         }
     })
     fuzzySystem.debug()
 
     # applications_to_plot = ["0020", "0034"]
-    applications_to_plot = ["0051", "0052"]
+    # applications_to_plot = ["0051", "0052"]
+    applications_to_plot = []
     fuzzySystem.process(applications, plot=applications_to_plot, filename="Results.txt")
 
     
