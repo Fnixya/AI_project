@@ -16,18 +16,20 @@ class FuzzySystem:
 
         self.LINE_COLORS = ['g', 'y', 'r', 'k']
 
-    def process(self, applications: list[classes.Application], plot: list[str] = []) -> None:
-        file = open("Results.txt", "w")
+    def process(self, applications: list[classes.Application], plot: list[str] = [], filename: str = None) -> None:
+        file = open(filename, "w")
+        self.rules_applied = [False] * len(self.rules)
         for application in applications:
             plot_application = False
             if application.appId in plot:
                 plot_application = True
 
-            risk, rules_applied = fuzzySystem.inference(application, plot_application)
-            #print(f"Risk value of applicant {application.appId} = {risk}. Rules applied {rules_applied}")
-            file.write(f"Risk value of applicant {application.appId} = {risk}. Rules applied {rules_applied}\n")
+            risk = fuzzySystem.inference(application, plot_application)
+            file.write(f"{application.appId}, Risk {risk}\n")
+        
+        if self.options["debug"]["rules_applied"]:
+            print("Results applied", self.rules_applied.count(True))
         file.close()
-
         self.render()
 
 # Fuzzy methods ______________________________________________
@@ -44,25 +46,24 @@ class FuzzySystem:
         for variable, value in application.data:
             applicationData[variable] = value
 
-        similarities, valid_rules = self._compute_antencedents(applicationData)
+        similarities = self._compute_antencedents(applicationData)
         risks = self._compute_consequents(similarities)
         aggregation = self._aggregation(risks)
         defuzz = self._defuzzification(aggregation)     
         if plot:
             self._plot_aggregation(application, aggregation, defuzz)  
 
-        return defuzz, valid_rules
+        return defuzz
     
 
     def _compute_antencedents(self, applicationData: dict) -> list[classes.Rule]:
         # Create a dictionary of similarities
         similarity = {}
-        valid_rules = 0
         for label in self.fuzzyRisks:
             similarity[label] = []
             
         # Compute the strength of each rule
-        for rule in self.rules:
+        for i, rule in enumerate(self.rules):
             # Evaluate the strength of each antecedent of the rule
             strengths: list[float] = []
             for antecedent in rule.antecedent :
@@ -78,8 +79,8 @@ class FuzzySystem:
             rule.strength = min(strengths)
             if rule.strength:
                 label = rule.consequent
-                valid_rules += 1
-                similarity[label].append(rule.strength)  
+                self.rules_applied[i] = True
+                similarity[label].append(rule.strength)
 
         # Obtain the maximum strength/similarity for each consequent
         for label in similarity:
@@ -88,7 +89,7 @@ class FuzzySystem:
             else:
                 similarity[label] = 0
 
-        return similarity, valid_rules
+        return similarity
 
 
     def _compute_consequents(self, similarities: dict) -> dict:
@@ -274,13 +275,14 @@ if __name__ == '__main__':
             'fuzzySets': False,
             'rules': False,
             'applications': False,
-            'plot': False
+            'plot': False,
+            'rules_applied': False
         }
     })
     fuzzySystem.debug()
 
     # applications_to_plot = ["0020", "0034"]
     applications_to_plot = ["0051", "0052"]
-    fuzzySystem.process(applications, plot=applications_to_plot)
+    fuzzySystem.process(applications, plot=applications_to_plot, filename="Results.txt")
 
     
