@@ -14,9 +14,23 @@ class FuzzySystem:
         self.rules = rules
         self.options = options
 
+        self.LINE_COLORS = ['g', 'y', 'r', 'k']
+
+    def process(self, applications: list[classes.Application], plot: list[str] = []) -> None:
+        for application in applications:
+            plot_application = False
+            if application.appId in plot:
+                plot_application = True
+
+            risk, rules_applied = fuzzySystem.inference(application, plot_application)
+            print(f"Risk value of applicant {application.appId} = {risk}. Rules applied {rules_applied}")
+
+
+        self.render()
+
 # Fuzzy methods ______________________________________________
 
-    def inference(self, application: classes.Application) -> float:
+    def inference(self, application: classes.Application, plot: bool = False) -> float:
         # No se que hacer aqui la verdad
         # computation of antecedent: max of min
         # computation of consequent: clip or scale
@@ -28,19 +42,20 @@ class FuzzySystem:
         for variable, value in application.data:
             applicationData[variable] = value
 
-        similarities: dict = self._compute_antencedents(applicationData)
+        similarities, valid_rules = self._compute_antencedents(applicationData)
         risks = self._compute_consequents(similarities)
         aggregation = self._aggregation(risks)
+        defuzz = self._defuzzification(aggregation)     
+        if plot:
+            self._plot_aggregation(application, aggregation, defuzz)  
 
-        # self.plot_aggregation(risks, aggregation)
-
-        defuzz = self._defuzzification(aggregation)       
-        return defuzz
+        return defuzz, valid_rules
     
 
     def _compute_antencedents(self, applicationData: dict) -> list[classes.Rule]:
         # Create a dictionary of similarities
         similarity = {}
+        valid_rules = 0
         for label in self.fuzzyRisks:
             similarity[label] = []
             
@@ -61,6 +76,7 @@ class FuzzySystem:
             rule.strength = min(strengths)
             if rule.strength:
                 label = rule.consequent
+                valid_rules += 1
                 similarity[label].append(rule.strength)  
 
         # Obtain the maximum strength/similarity for each consequent
@@ -70,7 +86,7 @@ class FuzzySystem:
             else:
                 similarity[label] = 0
 
-        return similarity
+        return similarity, valid_rules
 
 
     def _compute_consequents(self, similarities: dict) -> dict:
@@ -127,10 +143,9 @@ class FuzzySystem:
 
 # Plot methods ______________________________________________
 
-    def plot(self) -> None:
+    def plot_fuzzysets(self) -> None:
         # Constants        
         self.VARS = ['Age', 'IncomeLevel', 'Assets', 'Amount', 'Job', 'History', 'Risk']
-        self.LINE_STYLES = ['-g', '-y', '-r', '-k']
         self.PLOT_ROWS = 2
         self.PLOT_COLS = 4
 
@@ -158,14 +173,14 @@ class FuzzySystem:
                 graph = self.axRisk.plot(
                     self.fuzzySets[fuzzySet].x, 
                     self.fuzzySets[fuzzySet].y,    
-                    self.LINE_STYLES[self.counts[i]],
+                    f"-{self.LINE_COLORS[self.counts[i]]}",
                     label=self.fuzzySets[fuzzySet].label
                 )
             else:
                 graph = self.axis[i%self.PLOT_ROWS][i//self.PLOT_ROWS].plot(
                     self.fuzzySets[fuzzySet].x, 
                     self.fuzzySets[fuzzySet].y,    
-                    self.LINE_STYLES[self.counts[i]],
+                    f"-{self.LINE_COLORS[self.counts[i]]}",
                     label=self.fuzzySets[fuzzySet].label
                 )
 
@@ -184,16 +199,22 @@ class FuzzySystem:
         self.axRisk.set_ylabel("Degree of truth")
         self.axRisk.legend(self.labels[6], loc='lower right', fontsize='xx-small')
 
-    def plot_aggregation(self, risks, aggregation) -> None:
+
+    def _plot_aggregation(self, application: classes.Application, aggregation, defuzz: int) -> None:
         fig, ax = plt.subplots()
-        # self.fig.subplots_adjust(left=0.1, right=0.95, bottom=0.1, top=0.9, wspace=0.4, hspace=0.3)
-        # self.fig.suptitle("Fuzzy Sets", fontsize=16)
-        for label in self.fuzzyRisks:
-            ax.plot(self.fuzzyRisks[label].x, self.fuzzyRisks[label].y, ':m', label=self.fuzzyRisks[label].label)
-        for label in risks:
-            ax.plot(risks[label].x, risks[label].y, ':r', label=risks[label].label)
+        fig.suptitle(f"Inference of application {application.appId}")
+        fig.subplots_adjust(left=0.1, right=0.95, bottom=0.1, top=0.9, wspace=0.4, hspace=0.3)
+
+        # Plot fuzzy risk set
+        for i, label in enumerate(self.fuzzyRisks):
+            ax.plot(self.fuzzyRisks[label].x, self.fuzzyRisks[label].y, f':{self.LINE_COLORS[i]}', label=self.fuzzyRisks[label].label)
+
+        # Plot aggregation
         ax.plot(aggregation[0], aggregation[1], '-b', label='Aggregation')
-        self.render()
+        
+        # Plot defuzz value
+        ax.plot([defuzz, defuzz], [0, 1], '-r', label='Defuzzification')
+
 
     def render(self) -> None:
         plt.show()
@@ -225,7 +246,7 @@ class FuzzySystem:
 
         # Plot fuzzy sets
         if self.options["debug"]["plot"]:
-            self.plot()
+            self.plot_fuzzysets()
             self.render()  
 
 
@@ -240,7 +261,7 @@ if __name__ == '__main__':
     
     fuzzySystem = FuzzySystem(fuzzyRisks, fuzzyVars, rules, options={
         "consequents_mode": "S",
-        "defuzz_mode": "mom",
+        "defuzz_mode": "centroid",
         "debug" : {
             'fuzzySets': False,
             'rules': False,
@@ -251,6 +272,6 @@ if __name__ == '__main__':
     fuzzySystem.debug()
 
     # test
-    for application in applications:
-        risk = fuzzySystem.inference(application)
-        print(f"Risk value of applicant {application.appId} = {risk}")
+    fuzzySystem.process(applications, plot=["0018", "0051", "0052"])
+
+    
