@@ -48,3 +48,5 @@
 0048, Age, 39, IncomeLevel, 57, Assets, 32, Amount, 4, Job, 2, History, 2
 0049, Age, 24, IncomeLevel, 53, Assets, 47, Amount, 4, Job, 5, History, 0
 0050, Age, 46, IncomeLevel, 73, Assets, 19, Amount, 5, Job, 1, History, 2
+0051, Age, 0, IncomeLevel, 100, Assets, 0, Amount, 7, Job, 0, History, 3
+0052, Age, 46, IncomeLevel, 150, Assets, 50, Amount, 0, Job, 5, History, 6
