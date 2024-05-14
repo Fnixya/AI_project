@@ -192,11 +192,11 @@ class FuzzySystem:
         for i in range(0, 6):
             ax = self.axis[i%self.PLOT_ROWS][i//self.PLOT_ROWS]
             ax.set_xlabel(self.VARS[i])
-            ax.set_ylabel("Degree of truth")
+            ax.set_ylabel("Membership degree")
             ax.legend(self.labels[i], loc='lower right', fontsize='xx-small')
 
         self.axRisk.set_xlabel(self.VARS[6])
-        self.axRisk.set_ylabel("Degree of truth")
+        self.axRisk.set_ylabel("Membership degree")
         self.axRisk.legend(self.labels[6], loc='lower right', fontsize='xx-small')
 
 
@@ -206,14 +206,21 @@ class FuzzySystem:
         fig.subplots_adjust(left=0.1, right=0.95, bottom=0.1, top=0.9, wspace=0.4, hspace=0.3)
 
         # Plot fuzzy risk set
+        labels = []
         for i, label in enumerate(self.fuzzyRisks):
-            ax.plot(self.fuzzyRisks[label].x, self.fuzzyRisks[label].y, f':{self.LINE_COLORS[i]}', label=self.fuzzyRisks[label].label)
+            ax.plot(self.fuzzyRisks[label].x, self.fuzzyRisks[label].y, f':{self.LINE_COLORS[i]}', label=self.fuzzyRisks[label].label, linewidth=1)
+            labels.append(label)
 
         # Plot aggregation
         ax.plot(aggregation[0], aggregation[1], '-b', label='Aggregation')
+        labels.append('Aggregation')
         
         # Plot defuzz value
-        ax.plot([defuzz, defuzz], [0, 1], '-r', label='Defuzzification')
+        ax.plot([defuzz, defuzz], [0, 1], 'r', label='Defuzzification', linewidth=1, linestyle='--')
+        labels.append(self.options["defuzz_mode"])
+        ax.set_xlabel("Risk")
+        ax.set_ylabel("Membership degree")
+        ax.legend(labels, loc='lower right', fontsize='xx-small')
 
 
     def render(self) -> None:
@@ -253,11 +260,10 @@ class FuzzySystem:
                   
 
 if __name__ == '__main__':
-    # Obtain
     fuzzyRisks = loader.readFuzzySetsFile('Risks.txt')
     fuzzyVars = loader.readFuzzySetsFile('InputVarSets.txt')
-    rules = loader.readRulesFile()
-    applications: list = loader.readApplicationsFile()
+    rules = loader.readRulesFile('Rules.txt')
+    applications: list = loader.readApplicationsFile('Applications.txt')
     
     fuzzySystem = FuzzySystem(fuzzyRisks, fuzzyVars, rules, options={
         "consequents_mode": "S",
@@ -271,7 +277,8 @@ if __name__ == '__main__':
     })
     fuzzySystem.debug()
 
-    # test
-    fuzzySystem.process(applications, plot=["0018", "0051", "0052"])
+    # applications_to_plot = ["0020", "0034"]
+    applications_to_plot = ["0051", "0052"]
+    fuzzySystem.process(applications, plot=applications_to_plot)
 
     
