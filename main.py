@@ -123,8 +123,6 @@ class FuzzySystem:
         return defuzz
         
 
-
-
 # Plot methods ______________________________________________
 
     def plot(self) -> None:
@@ -228,8 +226,10 @@ class FuzzySystem:
             self.plot()
             self.render()  
 
-
-                  
+def write_output(filename):
+    
+    
+    pass                 
 
 if __name__ == '__main__':
     # Obtain
@@ -251,6 +251,8 @@ if __name__ == '__main__':
     fuzzySystem.debug()
 
     # test
+    file = open("Results.txt", "w")
     for application in applications:
         risk = fuzzySystem.inference(application)
-        print(f"Risk value of applicant {application.appId} = {risk}")
+        file.write(f"Risk value of applicant {application.appId} = {risk}\n")
+    file.close()
