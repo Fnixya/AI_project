@@ -230,8 +230,6 @@ class FuzzySystem:
         plt.show()
 
     def redraw(self) -> None:
-        # algo asi
-        # self.graph[i].set_ydata(...)
         plt.draw()
 
 
@@ -247,12 +245,6 @@ class FuzzySystem:
         if self.options["debug"]["rules"]:
             print("_____________ Rules ______________\n")
             rules.printRuleList()
-
-        # Read applications file
-        # if self.options["debug"]["applications"]:
-        #     print("_____________ Applications ______________\n")
-        #     for app in applications:
-        #         app.printApplication()
 
         # Plot fuzzy sets
         if self.options["debug"]["plot"]:
@@ -276,7 +268,6 @@ if __name__ == '__main__':
         "debug" : {
             'fuzzySets': False,
             'rules': False,
-            'applications': False,
             'plot': False,
             'rules_applied': True
         }
