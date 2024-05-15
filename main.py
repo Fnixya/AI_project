@@ -25,7 +25,7 @@ class FuzzySystem:
                 plot_application = True
 
             risk = fuzzySystem.inference(application, plot_application)
-            file.write(f"{application.appId}, Risk {risk}\n")
+            file.write(f"{application.appId}, Risk, {risk}\n")
         
         if self.options["debug"]["rules_applied"]:
             K = 4
@@ -38,7 +38,6 @@ class FuzzySystem:
 # Fuzzy methods ______________________________________________
 
     def inference(self, application: classes.Application, plot: bool = False) -> float:
-        # No se que hacer aqui la verdad
         # computation of antecedent: max of min
         # computation of consequent: clip or scale
         # aggregation: max (union of consequents)
@@ -273,7 +272,7 @@ if __name__ == '__main__':
     
     fuzzySystem = FuzzySystem(fuzzyRisks, fuzzyVars, rules, options={
         "consequents_mode": "S",
-        "defuzz_mode": "centroid",
+        "defuzz_mode": "som",
         "debug" : {
             'fuzzySets': False,
             'rules': False,
@@ -285,8 +284,8 @@ if __name__ == '__main__':
     fuzzySystem.debug()
 
     # applications_to_plot = ["0020", "0034"]
-    # applications_to_plot = ["0051", "0052"]
-    applications_to_plot = []
+    applications_to_plot = ["0051", "0052"]
+    # applications_to_plot = []
     fuzzySystem.process(applications, plot=applications_to_plot, filename="Results.txt")
 
     
